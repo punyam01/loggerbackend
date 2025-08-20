@@ -1,5 +1,5 @@
 import express from 'express'
-import { checkEmail, setReminder } from '../controllers/user.controller.js'
+import { checkEmail, setReminder } from '../controllers/user.Controller.js'
 
 import { verifyLogin } from '../middleware/auth.middleware.js'
 
