@@ -11,7 +11,12 @@ import {
 const router = express.Router()
 
 // Add a new log entry
-router.route('/add').post(verifyLogin, upload.single('scalpPhotos'), addLog)
+router.route('/add').post(
+  verifyLogin,
+  upload.single('scalpPhotos'),
+
+  addLog
+)
 
 router.route('/monthlycount').get(verifyLogin, getCurrentMonthLogCount)
 router.route('/symptomtrend').get(verifyLogin, getSymptomTrend)

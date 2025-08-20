@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import { v2 as cloudinary } from 'cloudinary'
 import fs from 'fs'
 
@@ -9,24 +12,27 @@ cloudinary.config({
 })
 
 // Function to upload a file to Cloudinary
-const uploadOnCloudinary = async localFilePath => {
+export const uploadOnCloudinary = async localFilePath => {
   try {
     if (!localFilePath) return null
 
-    // Await Cloudinary's upload response
+    // Upload to Cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: 'auto' // Automatically detect the file type
+      resource_type: 'auto' // auto-detect file type
     })
 
-    // Remove the file after uploading
-    fs.unlinkSync(localFilePath)
+    // Remove file after successful upload
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath)
+    }
+
     return response
   } catch (error) {
-    // Remove the locally saved file if uploading failed
-    fs.unlinkSync(localFilePath)
+    // Clean up temp file if exists
+    if (localFilePath && fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath)
+    }
     console.error('Error uploading to Cloudinary:', error)
     return null
   }
 }
-
-export { uploadOnCloudinary }

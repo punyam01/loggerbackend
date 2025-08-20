@@ -3,63 +3,67 @@ import { apiResponse } from '../utils/apiResponse.js'
 import { errorResponse } from '../utils/errorResponse.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.utils.js'
+
+// ✅ helper for safe JSON parsing
+const parseField = (field, defaultValue) => {
+  if (!field) return defaultValue
+  try {
+    return typeof field === 'string' ? JSON.parse(field) : field
+  } catch {
+    return defaultValue
+  }
+}
+
 export const addLog = asyncHandler(async (req, res) => {
   const userId = req.user?._id
   if (!userId) {
     throw new errorResponse(401, 'User is not authenticated')
   }
 
-  // Parse stringified fields from multipart/form-data
-  const symptoms = req.body.symptoms
-    ? JSON.parse(req.body.symptoms)
-    : {
-        itching: 0,
-        flaking: 0,
-        redness: 0,
-        oiliness: 0,
-        tightness: 0,
-        tenderness: 0,
-        hypopigmentation: 0,
-        hairThinning: 0,
-        dryness: 0
-      }
-  const symptomTiming = req.body.symptomTiming
-    ? JSON.parse(req.body.symptomTiming)
-    : {}
-  const productsUsed = req.body.productsUsed
-    ? JSON.parse(req.body.productsUsed)
-    : {
-        beaBayouProducts: [],
-        otherProducts: ''
-      }
-  const haircareRoutine = req.body.haircareRoutine
-    ? JSON.parse(req.body.haircareRoutine)
-    : {
-        hairstyle: '',
-        wasWashDay: false
-      }
-  const stressLevel = req.body.stressLevel ? parseInt(req.body.stressLevel) : 0
-  const dietLifestyle = req.body.dietLifestyle
-    ? JSON.parse(req.body.dietLifestyle)
-    : {
-        meals: '',
-        consumedAlcohol: false,
-        highSugarIntake: false
-      }
+  // ✅ safely parse all fields
+  const symptoms = parseField(req.body.symptoms, {
+    itching: 0,
+    flaking: 0,
+    redness: 0,
+    oiliness: 0,
+    tightness: 0,
+    tenderness: 0,
+    hypopigmentation: 0,
+    hairThinning: 0,
+    dryness: 0
+  })
+
+  const symptomTiming = parseField(req.body.symptomTiming, {})
+  const productsUsed = parseField(req.body.productsUsed, {
+    beaBayouProducts: [],
+    otherProducts: ''
+  })
+  const haircareRoutine = parseField(req.body.haircareRoutine, {
+    hairstyle: '',
+    wasWashDay: false
+  })
+  const dietLifestyle = parseField(req.body.dietLifestyle, {
+    meals: '',
+    consumedAlcohol: false,
+    highSugarIntake: false
+  })
+
+  const stressLevel = req.body.stressLevel ? parseInt(req.body.stressLevel) : 1
   const personalNotes = req.body.personalNotes || ''
 
-  // Handle single file (field: scalpPhotos)
+  // ✅ handle optional file upload
   let photoUrl = null
   if (req.file?.path) {
     const uploaded = await uploadOnCloudinary(req.file.path)
     photoUrl = uploaded?.secure_url || null
   }
 
+  // ✅ create new log
   const newLog = new ScalpLog({
     user: userId,
     symptoms,
     symptomTiming,
-    scalpPhotos: photoUrl ? [photoUrl] : [], // store as array with 0/1 URL
+    scalpPhotos: photoUrl ? [photoUrl] : [],
     productsUsed,
     haircareRoutine,
     stressLevel,
@@ -68,6 +72,7 @@ export const addLog = asyncHandler(async (req, res) => {
   })
 
   const savedLog = await newLog.save()
+
   res
     .status(201)
     .json(new apiResponse(201, savedLog, 'Log entry added successfully'))
