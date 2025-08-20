@@ -8,7 +8,7 @@ const app = express()
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://loggerfrontend.vercel.app/'
+  'https://loggerfrontend.vercel.app'
 ]
 const corsOptions = {
   origin: function (origin, callback) {
