@@ -6,28 +6,28 @@ import { errorResponse } from './utils/errorResponse.js'
 import cookieParser from 'cookie-parser'
 const app = express()
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://loggerfrontend.vercel.app'
-]
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true) // allow non-browser requests like Postman
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
-  credentials: true // if you want to allow cookies
+if (process.env.NODE_ENV === 'production') {
+  app.use(
+    cors({
+      origin: 'https://loggerfrontend.vercel.app',
+      credentials: true
+    })
+  )
+} else {
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+      credentials: true
+    })
+  )
 }
+
 // Middleware
 app.use(helmet())
 app.use(morgan('combined'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-app.use(cors(corsOptions))
 
 import reportRoutes from './routes/report.route.js'
 import logRoutes from './routes/log.route.js'
