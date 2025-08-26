@@ -32,6 +32,13 @@ const userSchema = new Schema(
       },
       minlength: [6, 'minimum 6 character is required ']
     },
+    // ADD THIS MISSING FIELD:
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+      required: true
+    },
     emailReminder: {
       type: Boolean,
       default: true
